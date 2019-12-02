@@ -6,4 +6,4 @@ import Html
 
 
 main =
-    Html.text Day2.part1Output
+    Html.text Day2.part2Output
