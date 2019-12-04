@@ -1,4 +1,4 @@
-module Day3 exposing (input, part1Output)
+module Day3 exposing (input, part1Output, part2Output)
 
 import Dict exposing (Dict)
 import List.Extra as List
@@ -56,7 +56,7 @@ type alias Point =
 
 
 addMoveToSet : Int -> Point -> Movement -> Dict Point Int -> { distanceTravelled : Int, position : Point, wire : Dict Point Int }
-addMoveToSet distanceTravelled ( x, y ) move set =
+addMoveToSet distanceTravelled ( x, y ) move wire =
     let
         list =
             List.range 1 move.distance
@@ -65,25 +65,41 @@ addMoveToSet distanceTravelled ( x, y ) move set =
         MoveLeft ->
             { position = ( x - move.distance, y )
             , distanceTravelled = distanceTravelled + move.distance
-            , wire = list |> List.map (\a -> ( ( x - a, y ), distanceTravelled + a )) |> Dict.fromList |> Dict.union set
+            , wire =
+                list
+                    |> List.map (\a -> ( ( x - a, y ), distanceTravelled + a ))
+                    |> Dict.fromList
+                    |> Dict.union wire
             }
 
         MoveRight ->
             { position = ( x + move.distance, y )
             , distanceTravelled = distanceTravelled + move.distance
-            , wire = list |> List.map (\a -> ( ( x + a, y ), distanceTravelled + a )) |> Dict.fromList |> Dict.union set
+            , wire =
+                list
+                    |> List.map (\a -> ( ( x + a, y ), distanceTravelled + a ))
+                    |> Dict.fromList
+                    |> Dict.union wire
             }
 
         MoveUp ->
             { position = ( x, y + move.distance )
             , distanceTravelled = distanceTravelled + move.distance
-            , wire = list |> List.map (\a -> ( ( x, y + a ), distanceTravelled + a )) |> Dict.fromList |> Dict.union set
+            , wire =
+                list
+                    |> List.map (\a -> ( ( x, y + a ), distanceTravelled + a ))
+                    |> Dict.fromList
+                    |> Dict.union wire
             }
 
         MoveDown ->
             { position = ( x, y - move.distance )
             , distanceTravelled = distanceTravelled + move.distance
-            , wire = list |> List.map (\a -> ( ( x, y - a ), distanceTravelled + a )) |> Dict.fromList |> Dict.union set
+            , wire =
+                list
+                    |> List.map (\a -> ( ( x, y - a ), distanceTravelled + a ))
+                    |> Dict.fromList
+                    |> Dict.union wire
             }
 
 
@@ -103,7 +119,28 @@ part1Output =
             Dict.intersect first second
                 |> Dict.toList
                 |> List.minimumBy (\( ( x, y ), _ ) -> abs x + abs y)
-                |> Maybe.map (\( x, y ) -> abs x + abs y)
+                |> Maybe.map (\( ( x, y ), _ ) -> abs x + abs y)
+                |> Maybe.withDefault -1
+                |> String.fromInt
+
+        _ ->
+            "failed"
+
+
+part2Output : String
+part2Output =
+    case inputParsed |> List.map wireToSet of
+        first :: second :: [] ->
+            Dict.intersect first second
+                |> Dict.toList
+                |> List.minimumBy
+                    (\( key, _ ) ->
+                        Maybe.map2 (+) (Dict.get key first) (Dict.get key second) |> Maybe.withDefault 9999999
+                    )
+                |> Maybe.map
+                    (\( key, _ ) ->
+                        Maybe.map2 (+) (Dict.get key first) (Dict.get key second) |> Maybe.withDefault 9999999
+                    )
                 |> Maybe.withDefault -1
                 |> String.fromInt
 
